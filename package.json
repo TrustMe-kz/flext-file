@@ -1,0 +1,52 @@
+{
+  "name": "flext-file",
+  "version": "1.0.0",
+  "description": "A Powerful Templating Engine",
+  "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./index.css": "./dist/index.css"
+  },
+  "scripts": {
+    "start:test-app": "cd test/app && npm run test-app",
+    "build:types": "tsc && tsc-alias",
+    "build-only": "bin/build.mjs && npm run build:types",
+    "build": "bun run build-only",
+    "test:app": "npm run build && cd test/app && npm i && npm run test-app",
+    "test-only": "vitest run",
+    "test": "bun run bun run build-only && bun run test-only",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist/"
+  ],
+  "author": "Kenny Romanov",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
+    "@types/node": "^24.10.1",
+    "esbuild": "^0.27.0",
+    "esbuild-plugin-import-glob": "^0.1.1",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.8"
+  },
+  "peerDependencies": {
+    "@trustme24/flext": "^1.5.1"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "jszip-sync": "^3.2.1-sync",
+    "written-number": "^0.11.1"
+  }
+}
