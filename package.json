@@ -18,10 +18,10 @@
     "start:test-app": "cd test/app && npm run test-app",
     "build:types": "tsc && tsc-alias",
     "build-only": "bin/build.mjs && npm run build:types",
-    "build": "bun run build-only",
+    "build": "npm run build-only",
     "test:app": "npm run build && cd test/app && npm i && npm run test-app",
     "test-only": "vitest run",
-    "test": "bun run bun run build-only && bun run test-only",
+    "test": "npm run npm run build-only && npm run test-only",
     "prepare": "npm run build"
   },
   "files": [
