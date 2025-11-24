@@ -1,4 +1,5 @@
-import JSZip from 'jszip';
+import { NotAFlextFileError } from './errors';
+import JSZip, { OutputType } from 'jszip';
 // @ts-ignore
 import JSZipSync from 'jszip-sync';
 import Flext from '@trustme24/flext';
@@ -17,7 +18,7 @@ export type MixedSyncOptions = {
 
 export type MixedSyncResult<O extends MixedSyncOptions, T = any> = O['sync'] extends true ? T : Promise<T>;
 
-export type BundleToFlextFileHandler<O extends MixedSyncOptions, T = any> = (filename: string, type: string) => MixedSyncResult<O, T>;
+export type BundleToFlextFileHandler<O extends MixedSyncOptions, T = any> = (filename: string, type: OutputType) => MixedSyncResult<O, T>;
 
 export type BundleToFlextResult<O extends MixedSyncOptions> = MixedSyncResult<O, Flext>;
 
@@ -30,19 +31,37 @@ export function bundleToFlext<O extends MixedSyncOptions>(fileHandler: BundleToF
     // If the context is sync
 
     if (options.sync) {
-        const manifest = fileHandler('index.json', 'string');
-        console.log('manifest', manifest);
+
+        // Getting the manifest
+
+        const manifest = fileHandler('manifest.json', 'string');
+
+        if (!manifest) throw new NotAFlextFileError();
     }
 
 
     return new Promise((_resolve, reject) => {
-        const fileRequests = [
-            fileHandler('index.json', 'string'),
-        ];
 
-        Promise.all(fileRequests).then((files) => {
-            const [ manifest ] = files;
+        // Getting the manifest
+
+        fileHandler('manifest.json', 'string').then((manifest) => {
+
+            // Doing some checks
+
+            if (!manifest) throw new NotAFlextFileError();
+
+
+            // Getting the assets
+
             console.log('manifest', manifest);
+
+            const fileRequests = [
+                fileHandler('template.hbs', 'string'),
+            ];
+
+            Promise.all(fileRequests).then((files) => {
+                console.log('assets', files);
+            }).catch(reject);
         }).catch(reject);
     }) as MixedSyncResult<O, Flext>;
 }
@@ -50,8 +69,8 @@ export function bundleToFlext<O extends MixedSyncOptions>(fileHandler: BundleToF
 export function getFlextSync(file: ArrayBuffer): Flext {
     const bundle = JSZipSync.load(file);
 
-    return bundleToFlext(() => {
-        const container = bundle.file('index.json');
+    return bundleToFlext((filename) => {
+        const container = bundle.file(filename);
         return container.asText();
     }, { sync: true });
 }
@@ -59,9 +78,9 @@ export function getFlextSync(file: ArrayBuffer): Flext {
 export async function getFlext(file: ArrayBuffer): Promise<Flext> {
     const bundle = await JSZip.loadAsync(file);
 
-    return bundleToFlext(async () => {
-        const container = bundle.file('index.json');
-        return await container.async('string');
+    return bundleToFlext(async (filename, type) => {
+        const container = bundle.file(filename);
+        return await container.async(type);
     }, { sync: false });
 }
 
