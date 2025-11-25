@@ -1,4 +1,4 @@
-import { Obj } from '@/types';
+import { Obj, Mime } from '@/types';
 import { BaseError, NotAFlextFileError } from '@/errors';
 import JSZip, { OutputType } from 'jszip';
 import JSZipSync from 'jszip-sync';
@@ -16,10 +16,10 @@ export type MixedSyncResult<P extends boolean, T = any> = P extends true ? T : P
 
 export type BundleToFlextFileHandler<P extends boolean, T = any> = (filename: string, type: OutputType) => MixedSyncResult<P, T>;
 
-export type BundleToFlextManifest = {
+export type BundleToFlextData = {
     version: string,
     template: string,
-    assets: Obj<ArrayBuffer>,
+    assets: Obj<Blob>,
 };
 
 
@@ -51,6 +51,46 @@ export function has(obj: Obj, key: string): boolean {
 
 // Framework Functions
 
+export function mime(file: File): Mime | null {
+    const [ _name, ...extensions ] = file?.name?.split('.') ?? [];
+    const extension = extensions?.join('.') || '';
+
+    switch (extension) {
+        case 'json':
+            return 'application/json';
+
+        case 'pdf':
+            return 'application/pdf';
+
+        case 'gif':
+            return 'image/gif';
+
+        case 'jpg':
+        case 'jpeg':
+            return 'image/jpeg';
+
+        case 'png':
+            return 'image/png';
+
+        case 'svg':
+            return 'image/svg+xml';
+
+        case 'webp':
+            return 'image/webp';
+
+        case 'txt':
+            return 'text/plain';
+
+        default:
+            return null;
+    }
+}
+
+export function shortFilename(filename: string): string {
+    const items = filename?.split('/') ?? [];
+    return items[items.length] || filename;
+}
+
 export function ensureFilename(val: string): string {
     let result = val;
 
@@ -67,9 +107,9 @@ export function ensureFilename(val: string): string {
     return result;
 }
 
-export function strToManifest(val: string, fileHandler: BundleToFlextFileHandler<true>, sync: true): BundleToFlextManifest;
-export function strToManifest(val: string, fileHandler: BundleToFlextFileHandler<false>, sync?: false): Promise<BundleToFlextManifest>;
-export function strToManifest<P extends boolean>(val: string, fileHandler: BundleToFlextFileHandler<P>, sync: P = false as P): MixedSyncResult<P, BundleToFlextManifest> {
+export function manifestToBundleData(val: string, fileHandler: BundleToFlextFileHandler<true>, sync: true): BundleToFlextData;
+export function manifestToBundleData(val: string, fileHandler: BundleToFlextFileHandler<false>, sync?: false): Promise<BundleToFlextData>;
+export function manifestToBundleData<P extends boolean>(val: string, fileHandler: BundleToFlextFileHandler<P>, sync: P = false as P): MixedSyncResult<P, BundleToFlextData> {
 
     // Getting the data
 
@@ -101,14 +141,17 @@ export function strToManifest<P extends boolean>(val: string, fileHandler: Bundl
 
         // Getting the assets
 
-        const assets: Obj<ArrayBuffer> = {};
+        const assets: Obj<Blob> = {};
 
         for (const assetName in assetsObj) {
             if (!has(assetsObj, assetName)) continue;
 
             const assetFilename = assetsObj[assetName];
+            const assetShortFilename = shortFilename(assetFilename);
+            const assetBlob = fileHandler(ensureFilename(assetFilename), 'blob');
+            const assetMime = mime(new File([ assetBlob ], assetShortFilename));
 
-            assets[assetName] = fileHandler(ensureFilename(assetFilename), 'arraybuffer') as ArrayBuffer;
+            assets[assetName] = new Blob([ assetBlob ], { type: assetMime })
         }
 
 
@@ -116,7 +159,7 @@ export function strToManifest<P extends boolean>(val: string, fileHandler: Bundl
             version,
             template,
             assets,
-        } as MixedSyncResult<P, BundleToFlextManifest>;
+        } as MixedSyncResult<P, BundleToFlextData>;
     }
 
 
@@ -126,7 +169,8 @@ export function strToManifest<P extends boolean>(val: string, fileHandler: Bundl
 
         const templateRequest = fileHandler(ensureFilename(templateFilename), 'string');
         const assetNames: string[] = [];
-        const assetFileRequests: Promise<ArrayBuffer>[] = [];
+        const assetShortFilenames: string[] = [];
+        const assetFileRequests: Promise<Blob>[] = [];
 
         for (const assetName in assetsObj) {
             if (!has(assetsObj, assetName)) continue;
@@ -135,31 +179,42 @@ export function strToManifest<P extends boolean>(val: string, fileHandler: Bundl
             // Getting the asset filename
 
             const assetFilename = assetsObj[assetName];
+            const assetShortFilename = shortFilename(assetFilename);
 
 
-            // Making a request
+            // Making a requests
 
             assetNames.push(assetName);
-            assetFileRequests.push(fileHandler(ensureFilename(assetFilename), 'arraybuffer'));
+            assetShortFilenames.push(assetShortFilename);
+            assetFileRequests.push(fileHandler(ensureFilename(assetFilename), 'blob'));
         }
 
 
         // Parsing the response
 
         templateRequest.then((template: string) => {
-            Promise.all(assetFileRequests).then((assetFiles: ArrayBuffer[]) => {
+            Promise.all(assetFileRequests).then((assetFiles: Blob[]) => {
 
                 // Getting the assets
 
-                const assets: Obj<ArrayBuffer> = {};
+                const assets: Obj<Blob> = {};
 
-                for (const [ i, file ] of assetFiles.entries()) {
+                for (const [ i, assetBlob ] of assetFiles.entries()) {
                     const assetName = assetNames[i] ?? null;
+                    const assetShortFilename = assetShortFilenames[i] ?? null;
+                    const assetMime = mime(new File([ assetBlob ], assetShortFilename));
 
-                    if (assetName)
-                        assets[assetName] = file;
-                    else
+
+                    // Doing some checks
+
+                    if (!assetName)
                         throw new BaseError('Flext: Unable to get asset: The asset name is out of range');
+
+                    if (!assetShortFilename)
+                        throw new BaseError('Flext: Unable to get asset: The asset filename is out of range');
+
+
+                    assets[assetName] = new Blob([ assetBlob ], { type: assetMime });
                 }
 
 
@@ -170,7 +225,7 @@ export function strToManifest<P extends boolean>(val: string, fileHandler: Bundl
                 });
             }).catch(reject);
         }).catch(reject);
-    }) as MixedSyncResult<P, BundleToFlextManifest>;
+    }) as MixedSyncResult<P, BundleToFlextData>;
 }
 
 export function bundleToFlext(fileHandler: BundleToFlextFileHandler<true>, sync: true): Flext;
@@ -183,18 +238,16 @@ export function bundleToFlext<P extends boolean>(fileHandler: BundleToFlextFileH
 
         // Getting the manifest
 
-        const manifestStr = fileHandler('manifest.json', 'string');
+        const manifest = fileHandler('manifest.json', 'string');
 
-        if (!manifestStr) throw new NotAFlextFileError();
+        if (!manifest) throw new NotAFlextFileError();
 
 
         // Getting the manifest
 
-        const manifest = strToManifest(manifestStr, fileHandler as BundleToFlextFileHandler<true>, true);
+        const data = manifestToBundleData(manifest, fileHandler as BundleToFlextFileHandler<true>, true);
 
-        console.log('_manifest_', manifest);
-
-        return;
+        return new Flext().setTemplate(data?.template || '').setAssets(data?.assets ?? {}) as MixedSyncResult<P, Flext>;
     }
 
 
@@ -202,19 +255,17 @@ export function bundleToFlext<P extends boolean>(fileHandler: BundleToFlextFileH
 
         // Getting the manifest
 
-        fileHandler('manifest.json', 'string').then((manifestStr) => {
+        fileHandler('manifest.json', 'string').then((manifest) => {
 
             // Doing some checks
 
-            if (!manifestStr) throw new NotAFlextFileError();
+            if (!manifest) throw new NotAFlextFileError();
 
 
             // Getting the manifest
 
-            strToManifest(manifestStr, fileHandler as BundleToFlextFileHandler<false>).then(manifest => {
-                console.log('_manifest_', manifest);
-                // @ts-ignore
-                resolve();
+            manifestToBundleData(manifest, fileHandler as BundleToFlextFileHandler<false>).then(data => {
+                resolve(new Flext().setTemplate(data?.template || '').setAssets(data?.assets ?? {}));
             });
         }).catch(reject);
     }) as MixedSyncResult<P, Flext>;
@@ -239,11 +290,11 @@ export async function getFlext(file: ArrayBuffer): Promise<Flext> {
 }
 
 // @ts-ignore
-export function getBufferSync(file: Flext): ArrayBuffer {
+export function getBufferSync(flext: Flext): ArrayBuffer {
 
 }
 
 // @ts-ignore
-export async function getBuffer(file: Flext): Promise<ArrayBuffer> {
+export async function getBuffer(flext: Flext): Promise<ArrayBuffer> {
 
 }

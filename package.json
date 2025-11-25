@@ -42,7 +42,7 @@
     "vitest": "^4.0.13"
   },
   "peerDependencies": {
-    "@trustme24/flext": "^1.5.1"
+    "@trustme24/flext": "link:@trustme24/flext"
   },
   "dependencies": {
     "jszip": "^3.10.1",
