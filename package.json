@@ -1,7 +1,7 @@
 {
   "name": "flext-file",
   "version": "1.0.0",
-  "description": "A Powerful Templating Engine",
+  "description": "A Powerful Templating Engine (Alpha)",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "module",
   "main": "dist/index.js",
@@ -42,7 +42,7 @@
     "vitest": "^4.0.13"
   },
   "peerDependencies": {
-    "@trustme24/flext": "link:@trustme24/flext"
+    "@trustme24/flext": "^1.7.0"
   },
   "dependencies": {
     "jszip": "^3.10.1",
