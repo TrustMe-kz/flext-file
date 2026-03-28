@@ -15,12 +15,12 @@ const file = ref<File | null>(null);
 
 // Defining the functions
 
-const previewCss = (val: string): void => { styleEl.value.textContent = val; }
-
-const preview = (html: string, css?: string|null): void => {
-  previewEl.value.innerHTML = html;
-  previewCss(css || '');
-};
+// const previewCss = (val: string): void => { styleEl.value.textContent = val; }
+//
+// const preview = (html: string, css?: string|null): void => {
+//   previewEl.value.innerHTML = html;
+//   previewCss(css || '');
+// };
 
 const onChange = (val: any): void => {
   const [ first ] = val?.target?.files ?? [];
@@ -32,7 +32,7 @@ const onChange = (val: any): void => {
 
 watch(file, async (val: File | null) => {
   if (!val) return;
-  console.log('val', await FlextFile.fromBuffer(await val.arrayBuffer()));
+  console.log('val', await FlextFile.from(await val.arrayBuffer(), true));
 });
 
 

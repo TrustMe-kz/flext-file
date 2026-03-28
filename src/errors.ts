@@ -1,21 +1,4 @@
-
-// Base Errors
-
-export class BaseThrowable extends Error {
-    public name = 'BaseThrowable';
-
-    constructor(name: string, stack?: string|null) {
-        super(name);
-        if (stack) this.stack = stack;
-    }
-}
-
-export class BaseError extends BaseThrowable {
-    public name = 'BaseError';
-}
-
-
-// Specific Errors
+import { BaseError } from '@trustme24/flext';
 
 export class NotAFlextFileError extends BaseError {
     public name = 'NotAFlextFileError';

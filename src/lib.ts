@@ -1,18 +1,12 @@
-import { Obj, Mime } from '@/types';
-import { BaseError, NotAFlextFileError } from '@/errors';
+import { types, Obj, BaseError } from '@trustme24/flext';
+import { Mime, MixedSyncResult } from '@/types';
+import { NotAFlextFileError } from '@/errors';
 import JSZip, { OutputType } from 'jszip';
 import JSZipSync from 'jszip-sync';
 import Flext from '@trustme24/flext';
 
 
-// Third-parties
-
-// const zip = new JSZip();
-
-
 // Types
-
-export type MixedSyncResult<P extends boolean, T = any> = P extends true ? T : Promise<T>;
 
 export type BundleToFlextFileHandler<P extends boolean, T = any> = (filename: string, type: OutputType) => MixedSyncResult<P, T>;
 
@@ -25,27 +19,43 @@ export type BundleToFlextData = {
 
 // Constants
 
-export const DEFAULT_VERSION = '1.0.alpha1';
+export const DEFAULT_VERSION = '1.0';
+
+
+// Checking Functions
+
+export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): types.Inarr<T, A> {
+    return arr.includes(val) as types.Inarr<T, A>;
+}
+
+export function has<T extends Obj, K extends keyof T>(obj: T, key: K): types.Has<T, K> {
+    return obj.hasOwnProperty(key) as types.Has<T, K>;
+}
+
+export function isset<T extends any>(val: T): types.Isset<T> {
+    return !inarr(val, null, undefined) as types.Isset<T>;
+}
+
+export function isNumber<T extends any>(val: T): types.IsNumber<T> {
+    return (isset(val) && !isNaN(Number(val))) as types.IsNumber<T>;
+}
+
+export function isObject<T extends any>(val: T): types.IsObject<T> {
+    return (typeof val === 'object' && val !== null) as types.IsObject<T>;
+}
 
 
 // System Functions
 
 export function audit(val: any): string {
-    switch (typeof val) {
-        case 'string':
-            return `'${val}'`;
-        case 'object':
-            return JSON.stringify(val);
-        default:
-            return String(val);
-    }
-}
+    if (isObject(val))
+        return JSON.stringify(val);
 
+    else if (typeof val === 'string')
+        return `'${val}'`;
 
-// Checking Functions
-
-export function has(obj: Obj, key: string): boolean {
-    return obj.hasOwnProperty(key);
+    else
+        return String(val);
 }
 
 
@@ -109,7 +119,7 @@ export function ensureFilename(val: string): string {
 
 export function manifestToBundleData(val: string, fileHandler: BundleToFlextFileHandler<true>, sync: true): BundleToFlextData;
 export function manifestToBundleData(val: string, fileHandler: BundleToFlextFileHandler<false>, sync?: false): Promise<BundleToFlextData>;
-export function manifestToBundleData<P extends boolean>(val: string, fileHandler: BundleToFlextFileHandler<P>, sync: P = false as P): MixedSyncResult<P, BundleToFlextData> {
+export function manifestToBundleData<P extends boolean = false>(val: string, fileHandler: BundleToFlextFileHandler<P>, sync?: P): MixedSyncResult<P, BundleToFlextData> {
 
     // Getting the data
 
@@ -230,7 +240,7 @@ export function manifestToBundleData<P extends boolean>(val: string, fileHandler
 
 export function bundleToFlext(fileHandler: BundleToFlextFileHandler<true>, sync: true): Flext;
 export function bundleToFlext(fileHandler: BundleToFlextFileHandler<false>, sync?: false): Promise<Flext>;
-export function bundleToFlext<P extends boolean>(fileHandler: BundleToFlextFileHandler<P>, sync: P = false as P): MixedSyncResult<P, Flext> {
+export function bundleToFlext<P extends boolean = false>(fileHandler: BundleToFlextFileHandler<P>, sync?: P): MixedSyncResult<P, Flext> {
 
     // If the context is sync
 
