@@ -1,6 +1,6 @@
 import { getFlext, getFlextSync, getBuffer, getBufferSync } from '@/lib';
 import { MixedSyncResult, FlextFileInterface } from '@/types';
-import Flext from '@trustme24/flext';
+import Flext from '@flext/core';
 
 
 // Classes

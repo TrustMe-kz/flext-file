@@ -1,4 +1,4 @@
-import { BaseError } from '@trustme24/flext';
+import { BaseError } from '@flext/core';
 
 export class NotAFlextFileError extends BaseError {
     public name = 'NotAFlextFileError';

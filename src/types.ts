@@ -1,4 +1,4 @@
-import Flext from '@trustme24/flext';
+import Flext from '@flext/core';
 
 
 // Base Data Types
