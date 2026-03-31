@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "A technology for building reliable document templates",
   "keywords": ["templates", "templating engine", "documents", "document engine", "flext"],
+  "repository": "https://github.com/TrustMe-kz/flext-file.git",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

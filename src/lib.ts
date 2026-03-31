@@ -1,4 +1,4 @@
-import { types, Obj, BaseError } from '@trustme24/flext';
+import { core, Obj, BaseError } from '@trustme24/flext';
 import { Mime, MixedSyncResult } from '@/types';
 import { NotAFlextFileError } from '@/errors';
 import JSZip, { OutputType } from 'jszip';
@@ -30,24 +30,24 @@ export const DEFAULT_ASSETS_DIR = 'assets';
 
 // Checking Functions
 
-export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): types.Inarr<T, A> {
-    return arr.includes(val) as types.Inarr<T, A>;
+export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): core.types.Inarr<T, A> {
+    return arr.includes(val) as core.types.Inarr<T, A>;
 }
 
-export function has<T extends Obj, K extends keyof T>(obj: T, key: K): types.Has<T, K> {
-    return obj.hasOwnProperty(key) as types.Has<T, K>;
+export function has<T extends Obj, K extends keyof T>(obj: T, key: K): core.types.Has<T, K> {
+    return obj.hasOwnProperty(key) as core.types.Has<T, K>;
 }
 
-export function isset<T extends any>(val: T): types.Isset<T> {
-    return !inarr(val, null, undefined) as types.Isset<T>;
+export function isset<T extends any>(val: T): core.types.Isset<T> {
+    return !inarr(val, null, undefined) as core.types.Isset<T>;
 }
 
-export function isNumber<T extends any>(val: T): types.IsNumber<T> {
-    return (isset(val) && !isNaN(Number(val))) as types.IsNumber<T>;
+export function isNumber<T extends any>(val: T): core.types.IsNumber<T> {
+    return (isset(val) && !isNaN(Number(val))) as core.types.IsNumber<T>;
 }
 
-export function isObject<T extends any>(val: T): types.IsObject<T> {
-    return (typeof val === 'object' && val !== null) as types.IsObject<T>;
+export function isObject<T extends any>(val: T): core.types.IsObject<T> {
+    return (typeof val === 'object' && val !== null) as core.types.IsObject<T>;
 }
 
 
