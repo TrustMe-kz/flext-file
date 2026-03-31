@@ -1,7 +1,7 @@
+import Flext from '@trustme24/flext';
+
 
 // Base Data Types
-
-export type Obj<T = any> = Record<string, T>;
 
 export type Mime =
     | 'application/json'
@@ -13,4 +13,16 @@ export type Mime =
     | 'image/webp'
     | 'text/plain';
 
-export type MaybePromise<T = any> = T | Promise<T>;
+export type MixedSyncResult<P extends boolean, T = any> = P extends true ? T : Promise<T>;
+
+
+// Base Interfaces
+
+export interface FlextFileInterface {
+    data: Flext,
+    readonly buffer: ArrayBuffer,
+    readonly blob: Blob,
+    setData<P extends boolean = false>(val: Flext | ArrayBuffer, async?: P): MixedSyncResult<P, this>,
+    getBuffer<P extends boolean = false>(async?: P): MixedSyncResult<P, ArrayBuffer>,
+    getBlob<P extends boolean = false>(async?: P): MixedSyncResult<P, Blob>,
+}

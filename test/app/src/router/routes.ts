@@ -1,14 +1,27 @@
 import { RouteRecordRaw } from 'vue-router';
-import HomePage from '@/pages/home';
+import TemplatesPage from '@/pages/templates';
+import FilePage from '@/pages/templates/file';
 
 
 // Third-parties
 
 export const routes: RouteRecordRaw[] = [
     {
-        name: 'Home',
         path: '/',
-        component: HomePage,
+        component: TemplatesPage,
+        children: [
+            {
+                name: 'Home',
+                path: '',
+                component: FilePage,
+            },
+
+            {
+                name: 'File',
+                path: 'file',
+                component: FilePage,
+            },
+        ]
     },
 ];
 

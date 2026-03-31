@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "paths": {
-      "@/*": [ "./src/*" ]
+      "@/*": [ "./*" ],
+      "@flext-file/*": [ "../../../dist/*" ],
+      "@flext-file": [ "../../../dist/index.d.ts" ]
     },
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -15,8 +17,8 @@
     "noImplicitAny": false,
 
     /* Bundler mode */
-    "outDir": "dist",
-    "moduleResolution": "nodenext",
+    "outDir": "../dist",
+    "moduleResolution": "node",
     "sandboxModules": true,
     "moduleDetection": "force",
     "declaration": true,
@@ -31,5 +33,5 @@
     "noFallthroughCasesInSwitch": true,
     "ignoreDeprecations": "6.0"
   },
-  "include": [ "vite.config.ts", "tailwind.config.ts", "src/**/*.ts", "src/**/*.d.ts" ]
+  "include": [ "**/*.ts", "**/*.d.ts" ]
 }

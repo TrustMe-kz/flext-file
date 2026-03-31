@@ -1,10 +1,8 @@
 {
   "exclude": [ "test/app/**" ],
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
-      "@/*": [ "src/*" ],
-      "@flext-file/*": [ "dist/*" ],
+      "@flext-file/*": [ "./dist/*" ],
     },
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -31,10 +29,8 @@
     "strictNullChecks": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "ignoreDeprecations": "6.0"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts"
-  ]
+  "include": [ "vitest.config.ts" ]
 }
