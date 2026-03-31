@@ -1,7 +1,7 @@
 {
   "name": "flext-file",
   "version": "1.0.1",
-  "description": "A technology for building reliable document templates (Alpha)",
+  "description": "A technology for building reliable document templates",
   "keywords": ["templates", "templating engine", "documents", "document engine", "flext"],
   "type": "module",
   "main": "dist/index.js",
@@ -43,7 +43,7 @@
     "vitest": "^4.1.2"
   },
   "peerDependencies": {
-    "@flext/core": "^1.0.1"
+    "@trustme24/flext": "^2.0.0"
   },
   "dependencies": {
     "jszip": "^3.10.1",

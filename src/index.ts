@@ -1,6 +1,6 @@
 import { getFlext, getFlextSync, getBuffer, getBufferSync } from '@/lib';
 import { MixedSyncResult, FlextFileInterface } from '@/types';
-import Flext from '@flext/core';
+import Flext from '@trustme24/flext';
 
 
 // Classes
@@ -58,21 +58,37 @@ export class FlextFile implements FlextFileInterface {
         }) as MixedSyncResult<P, this>;
     }
 
-    public async getBuffer(): Promise<ArrayBuffer> {
-        return await getBuffer(this.data);
+    public getBuffer(async: true): Promise<ArrayBuffer>;
+    public getBuffer(async?: false): ArrayBuffer;
+    public getBuffer<P extends boolean = false>(async?: P): MixedSyncResult<P, ArrayBuffer> {
+        if (!async) return getBufferSync(this.data) as MixedSyncResult<P, ArrayBuffer>;
+
+        return new Promise((resolve, reject) => {
+            getBuffer(this.data).then(resolve).catch(reject);
+        }) as MixedSyncResult<P, ArrayBuffer>;
     }
 
-    public async getBlob(): Promise<Blob> {
-        const buffer = await getBuffer(this.data);
-        return new Blob([ buffer ], { type: 'application/zip' });
+    public getBlob(async: true): Promise<Blob>;
+    public getBlob(async?: false): Blob;
+    public getBlob<P extends boolean = false>(async?: P): MixedSyncResult<P, Blob> {
+        if (!async) {
+            const buffer = this.getBuffer();
+            return new Blob([ buffer ], { type: 'application/zip' }) as MixedSyncResult<P, Blob>;
+        }
+
+        return new Promise((resolve, reject) => {
+            this.getBuffer(true).then(result => {
+                resolve(new Blob([ result ], { type: 'application/zip' }));
+            }).catch(reject);
+        }) as MixedSyncResult<P, Blob>;
     }
 
     public get buffer(): ArrayBuffer {
-        return getBufferSync(this.data);
+        return this.getBuffer();
     }
 
     public get blob(): Blob {
-        return new Blob([ this.buffer ], { type: 'application/zip' });
+        return this.getBlob();
     }
 }
 

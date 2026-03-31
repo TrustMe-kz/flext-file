@@ -12,7 +12,7 @@ esbuild.build({
     sourcemap: false,
     minify: true,
     plugins: [ babelPlugin() ],
-    external: [ '@flext/core' ],
+    external: [ '@trustme24/flext' ],
 }).catch(() => process.exit(1));
 
 esbuild.build({
@@ -23,5 +23,5 @@ esbuild.build({
     format: 'esm',
     sourcemap: false,
     minify: true,
-    external: [ '@flext/core' ],
+    external: [ '@trustme24/flext' ],
 }).catch(() => process.exit(1));

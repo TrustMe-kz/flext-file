@@ -1,9 +1,9 @@
-import { types, Obj, BaseError } from '@flext/core';
+import { types, Obj, BaseError } from '@trustme24/flext';
 import { Mime, MixedSyncResult } from '@/types';
 import { NotAFlextFileError } from '@/errors';
 import JSZip, { OutputType } from 'jszip';
 import JSZipSync from 'jszip-sync';
-import Flext from '@flext/core';
+import Flext from '@trustme24/flext';
 
 
 // Types

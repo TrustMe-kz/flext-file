@@ -1,4 +1,4 @@
-import Flext from '@flext/core';
+import Flext from '@trustme24/flext';
 
 
 // Base Data Types
@@ -23,6 +23,6 @@ export interface FlextFileInterface {
     readonly buffer: ArrayBuffer,
     readonly blob: Blob,
     setData<P extends boolean = false>(val: Flext | ArrayBuffer, async?: P): MixedSyncResult<P, this>,
-    getBuffer(): Promise<ArrayBuffer>,
-    getBlob(): Promise<Blob>,
+    getBuffer<P extends boolean = false>(async?: P): MixedSyncResult<P, ArrayBuffer>,
+    getBlob<P extends boolean = false>(async?: P): MixedSyncResult<P, Blob>,
 }
