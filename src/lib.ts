@@ -21,6 +21,12 @@ export type BundleToFlextData = {
 
 export const DEFAULT_VERSION = '1.0';
 
+export const DEFAULT_MANIFEST_FILENAME = 'manifest.json';
+
+export const DEFAULT_TEMPLATE_FILENAME = 'template.hbs';
+
+export const DEFAULT_ASSETS_DIR = 'assets';
+
 
 // Checking Functions
 
@@ -161,7 +167,7 @@ export function manifestToBundleData<P extends boolean = false>(val: string, fil
             const assetBlob = fileHandler(ensureFilename(assetFilename), 'blob');
             const assetMime = mime(new File([ assetBlob ], assetShortFilename));
 
-            assets[assetName] = new Blob([ assetBlob ], { type: assetMime })
+            assets[assetName] = new Blob([ assetBlob ], { type: assetMime });
         }
 
 
@@ -248,7 +254,7 @@ export function bundleToFlext<P extends boolean = false>(fileHandler: BundleToFl
 
         // Getting the manifest
 
-        const manifest = fileHandler('manifest.json', 'string');
+        const manifest = fileHandler(DEFAULT_MANIFEST_FILENAME, 'string');
 
         if (!manifest) throw new NotAFlextFileError();
 
@@ -265,7 +271,7 @@ export function bundleToFlext<P extends boolean = false>(fileHandler: BundleToFl
 
         // Getting the manifest
 
-        fileHandler('manifest.json', 'string').then((manifest) => {
+        fileHandler(DEFAULT_MANIFEST_FILENAME, 'string').then((manifest) => {
 
             // Doing some checks
 
@@ -279,6 +285,55 @@ export function bundleToFlext<P extends boolean = false>(fileHandler: BundleToFl
             });
         }).catch(reject);
     }) as MixedSyncResult<P, Flext>;
+}
+
+export function flextToBuffer(flext: Flext, sync: true): ArrayBuffer;
+export function flextToBuffer(flext: Flext, sync?: false): Promise<ArrayBuffer>;
+export function flextToBuffer<P extends boolean = false>(flext: Flext, sync?: P): MixedSyncResult<P, ArrayBuffer> {
+
+    // Getting the template
+
+    const template = flext?.assets?.__template ?? null;
+
+    if (!template) throw new BaseError(`Flext: Unable to get file: The '__template' asset is not set: ` + audit(flext?.assets ?? null));
+
+
+    // Getting the assets
+
+    const zip = sync ? new JSZipSync() : new JSZip();
+    const assets = flext?.assets ?? {};
+    const assetsArr: Obj<string> = {};
+
+    for (const assetName in assets) {
+        if (!has(assets, assetName)) continue;
+
+        const assetValue = assets[assetName];
+
+        zip.file(DEFAULT_ASSETS_DIR + '/' + assetName, assetValue);
+
+        assetsArr[assetName] = `/${DEFAULT_ASSETS_DIR}/${assetName}`;
+    }
+
+
+    // Getting the buffer
+
+    zip.file(DEFAULT_TEMPLATE_FILENAME, flext.ast);
+
+    zip.file('manifest.json', JSON.stringify({
+        v: DEFAULT_VERSION,
+        template: '/' + DEFAULT_TEMPLATE_FILENAME,
+        assets: assetsArr,
+    }));
+
+
+    // Doing some checks
+
+    if (sync) return zip.generate({ type: 'arraybuffer' });
+
+
+    return new Promise((resolve, reject) => {
+        zip.generateAsync({ type: 'arraybuffer' }).then(resolve).catch(reject);
+    }) as MixedSyncResult<P, ArrayBuffer>;
 }
 
 export function getFlextSync(file: ArrayBuffer): Flext {
@@ -299,12 +354,10 @@ export async function getFlext(file: ArrayBuffer): Promise<Flext> {
     });
 }
 
-// @ts-ignore
 export function getBufferSync(flext: Flext): ArrayBuffer {
-
+    return flextToBuffer(flext, true);
 }
 
-// @ts-ignore
 export async function getBuffer(flext: Flext): Promise<ArrayBuffer> {
-
+    return await flextToBuffer(flext);
 }

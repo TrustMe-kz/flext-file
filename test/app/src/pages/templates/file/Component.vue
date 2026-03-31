@@ -71,7 +71,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="templates_page flex flex-col h-full p-4 gap-16 grow">
+  <div class="templates_page flex flex-col h-full gap-16 grow">
     <Input class="w-min" type="file" @change="onChange" />
     <div ref="sandboxEl" />
   </div>
